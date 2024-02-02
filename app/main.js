@@ -16,3 +16,5 @@ window.messageHandler = new MessageHandler();
 peerConnection.getId().then(id => {
     console.log('ID:', id);
 });
+
+//TODO: Write room generator
