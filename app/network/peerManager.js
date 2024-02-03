@@ -1,6 +1,6 @@
 import {Peer} from "https://esm.sh/peerjs@1.5.2?bundle-deps"
 
-class PeerConnection 
+class PeerManager 
 {
     constructor(){
         this.peer = new Peer();
@@ -37,9 +37,8 @@ class PeerConnection
         conn.on('open', () => {
             // here you have conn.id
             console.log('Connessione avviata con:', peerId);
-            this.conn = conn;
             this.handleIncomingConnection(conn);
-          });
+        });
     }
 
     handleIncomingConnection(conn) {
@@ -48,7 +47,21 @@ class PeerConnection
             // Invia i dati a un modulo per la gestione dei messaggi
             messageHandler.handleMessage(data);
         });
+
+        conn.on('close', () => {
+            console.log('Connessione chiusa con:', conn.peer);
+            this.conn = null;
+        });
+
+        //maybe not so good
+        this.conn = conn;
+    }
+
+    closeConnection(conn){
+        //must use conn to handle multiple peer connected.
+        this.conn.close();
+        this.conn = null;
     }
 }
 
-export default PeerConnection;
+export default PeerManager;

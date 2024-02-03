@@ -1,8 +1,8 @@
-import PeerConnection from './services/peerService.js';
-import MessageHandler from './services/messageService.js';
+import PeerManager from './network/peerManager.js';
+import MessageHandler from './network/messageHandler.js';
 
 // Crea una connessione P2P
-window.peerConnection = new PeerConnection();
+window.peerConnection = new PeerManager();
 
 // Crea un gestore dei messaggi
 window.messageHandler = new MessageHandler();
