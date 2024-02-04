@@ -1,6 +1,7 @@
 import PeerManager from './network/peerManager.js';
 import MessageHandler from './network/messageHandler.js';
 import EncryptionService from './services/encryptionService.js';
+import Mediator from './mediator/mediator.js';
 
 //TODO: remove window. and use const (debug purpose only) 
 // Init P2P Connection Manager
@@ -8,7 +9,7 @@ window.peer = new PeerManager();
 
 // Init Message Handler
 window.messageHandler = new MessageHandler();
-
+window.mediator = new Mediator(window.peer, window.messageHandler);
 // Init Encryption Service (Crypto Utility for E2E communication)
 window.encryptionService = new EncryptionService();
 
