@@ -1,20 +1,31 @@
 import PeerManager from './network/peerManager.js';
 import MessageHandler from './network/messageHandler.js';
+import EncryptionService from './services/encryptionService.js';
 
-// Crea una connessione P2P
+//TODO: remove window. and use const (debug purpose only) 
+// Init P2P Connection Manager
 window.peerConnection = new PeerManager();
 
-// Crea un gestore dei messaggi
+// Init Message Handler
 window.messageHandler = new MessageHandler();
 
-// Esempio di connessione a un altro peer
-// peerConnection.connectToPeer('peerId123');
+// Init Encryption Service (Crypto Utility for E2E communication)
+window.encryptionService = new EncryptionService();
 
-// Esempio di invio di un messaggio
+// Connect to another peer
+//peerConnection.connectToPeer('peerId123');
+
+// Send message
 //const messageData = { text: 'Ciao, mondo!' };
 //messageHandler.sendMessage(peerConnection, messageData);
+(async () => {
+    console.log(await peerConnection.getId());
+})();
+
+/*
 peerConnection.getId().then(id => {
     console.log('ID:', id);
 });
+*/
 
 //TODO: Write room generator

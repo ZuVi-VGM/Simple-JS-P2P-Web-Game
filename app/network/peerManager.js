@@ -17,7 +17,7 @@ class PeerManager
         });
     }
 
-    getId() {
+    async getId() {
         return new Promise((resolve, reject) => {
             const checkId = () => {
                 if (this.peer_id) {
