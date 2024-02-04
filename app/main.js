@@ -4,7 +4,7 @@ import EncryptionService from './services/encryptionService.js';
 
 //TODO: remove window. and use const (debug purpose only) 
 // Init P2P Connection Manager
-window.peerConnection = new PeerManager();
+window.peer = new PeerManager();
 
 // Init Message Handler
 window.messageHandler = new MessageHandler();
@@ -19,7 +19,7 @@ window.encryptionService = new EncryptionService();
 //const messageData = { text: 'Ciao, mondo!' };
 //messageHandler.sendMessage(peerConnection, messageData);
 (async () => {
-    console.log(await peerConnection.getId());
+    console.log(await peer.getId());
 })();
 
 /*

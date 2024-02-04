@@ -23,7 +23,7 @@ class PeerManager
                 if (this.peer_id) {
                     resolve(this.peer_id);
                 } else {
-                    setTimeout(checkId, 100); // Controlla ogni 100 millisecondi
+                    setTimeout(checkId, 100);
                 }
             };
     
@@ -44,7 +44,7 @@ class PeerManager
     handleIncomingConnection(conn) {
         conn.on('data', (data) => {
             console.log('Dati ricevuti:', data);
-            // Invia i dati a un modulo per la gestione dei messaggi
+            // Send data to messageHandler module
             messageHandler.handleMessage(data);
         });
 
