@@ -44,8 +44,8 @@ class PeerManager
     handleIncomingConnection(conn) {
         conn.on('data', (data) => {
             console.log('Dati ricevuti:', data);
-            // Send data to messageHandler module
-            messageHandler.handleMessage(data);
+            // Send data to MessageHandler module
+            MessageHandler.handleMessage(data);
         });
 
         conn.on('close', () => {
