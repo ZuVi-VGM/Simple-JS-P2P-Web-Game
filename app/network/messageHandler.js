@@ -1,14 +1,14 @@
 class MessageHandler {
     handleMessage(data) {
-      // Implementa la logica per gestire i messaggi ricevuti
-      console.log('Messaggio ricevuto:', data);
+      // Handle received messages
+      console.log('Message received:', data);
     }
   
     sendMessage(peerConnection, data) {
-      // Invia un messaggio a un peer tramite la connessione P2P
+      // Send a message to a peer using p2p
       peerConnection.conn.send(data);
-      console.log('Messaggio inviato:', data);
+      console.log('Message sent:', data);
     }
   }
   
-  export default MessageHandler;
+export default MessageHandler;
