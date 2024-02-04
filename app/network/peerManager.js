@@ -1,9 +1,11 @@
 import {Peer} from "https://esm.sh/peerjs@1.5.2?bundle-deps"
+import EventEmitter from "../utils/eventEmitter.js";
 
 class PeerManager 
 {
     constructor(){
         this.peer = new Peer();
+        this.emitter = new EventEmitter();
 
         this.peer.on('open', (id) => {
             console.log('Peer ID:', id);
@@ -44,8 +46,8 @@ class PeerManager
     handleIncomingConnection(conn) {
         conn.on('data', (data) => {
             console.log('Dati ricevuti:', data);
-            // Send data to MessageHandler module
-            MessageHandler.handleMessage(data);
+            //Sendind data to MessageHandler module using an event
+            this.emitter.emit('dataReceived', data);
         });
 
         conn.on('close', () => {
