@@ -15,7 +15,7 @@ class PeerManager
         this.peer.on('connection', (conn) => {
             console.log('Connessione ricevuta:', conn.peer);
             this.handleIncomingConnection(conn);
-            this.conn = conn;
+            this.emitter.emit('newConnection', conn);
         });
     }
 
@@ -37,9 +37,9 @@ class PeerManager
         const conn = this.peer.connect(peerId);
 
         conn.on('open', () => {
-            // here you have conn.id
             console.log('Connessione avviata con:', peerId);
             this.handleIncomingConnection(conn);
+            this.emitter.emit('newConnection', conn);
         });
     }
 
@@ -52,17 +52,13 @@ class PeerManager
 
         conn.on('close', () => {
             console.log('Connessione chiusa con:', conn.peer);
-            this.conn = null;
+            this.emitter.emit('connectionClosed', conn);
         });
-
-        //maybe not so good
-        this.conn = conn;
+  
     }
 
     closeConnection(conn){
-        //must use conn to handle multiple peer connected.
-        this.conn.close();
-        this.conn = null;
+        conn.close();
     }
 }
 

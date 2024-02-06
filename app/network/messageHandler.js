@@ -6,7 +6,7 @@ class MessageHandler {
   
     sendMessage(peerConnection, data) {
       // Send a message to a peer using p2p
-      peerConnection.conn.send(data);
+      peerConnection.send(data);
       console.log('Message sent:', data);
     }
   }
