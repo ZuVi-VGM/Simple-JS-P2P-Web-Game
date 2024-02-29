@@ -1,0 +1,68 @@
+:root{
+    --clr-white: rgb(255,255,255);
+    --clr-black: rgb(0,0,0);
+    --clr-msg: rgba(4,4,4,0.5);
+    --clr-bg-dark: rgb(27, 27, 27);
+    --clr-bg2-dark: rgb(49,49,49);
+}
+
+html, body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0px); }
+}
+
+label{
+    display:block;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--clr-bg-dark);
+}
+
+#app {
+    color: var(--clr-white);
+    background: var(--clr-bg2-dark);
+    display: flex;
+    padding: 1em;
+    width: 60%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1vh;
+    border: 1px solid var(--clr-white);
+}
+        
+.login-form {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.login-form.hide {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+.chatbox-container {
+    animation: slideIn 2s ease forwards;
+}
+
+.messages{
+    height:10vh;
+    overflow-y:auto;
+}
