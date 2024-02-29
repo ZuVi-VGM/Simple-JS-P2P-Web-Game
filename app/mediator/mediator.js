@@ -9,7 +9,12 @@ class Mediator {
         });
 
         this.peer.emitter.on('newConnection', (conn) => {
-            this.game.addUser(conn); //TODO: Check or refuse conection
+            if(!this.game.addUser(conn)) {
+                setTimeout(() => {
+                    this.messageHandler.sendMessage(conn, 'Connection Refused, game started!');
+                    this.peer.closeConnection(conn);
+                }, 500);
+            }
         });
 
         this.peer.emitter.on('connectionClosed', (conn) => {
@@ -29,9 +34,6 @@ class Mediator {
             });
         }
     }
-
-
-
 }
 
 export default Mediator;
