@@ -1,19 +1,19 @@
 class Mediator {
-    constructor(PeerManager, MessageHandler) {
+    constructor(PeerManager, MessageHandler, Game) {
         this.peer = PeerManager;
         this.messageHandler = MessageHandler;
-        this.connections = {};
+        this.game = Game;
 
         this.peer.emitter.on('dataReceived', (data) => {
             this.messageHandler.handleMessage(data);
         });
 
         this.peer.emitter.on('newConnection', (conn) => {
-            this.connections[conn.peer] = conn;
+            this.game.addUser(conn); //TODO: Check or refuse conection
         });
 
         this.peer.emitter.on('connectionClosed', (conn) => {
-            delete this.connections[conn.peer];
+            this.game.deleteUser(conn.peer);
         });
 
         window.addEventListener('beforeunload', (event) => this.handleBeforeUnload(event));
@@ -23,12 +23,14 @@ class Mediator {
         event.preventDefault();
         event.returnValue = ''; // Per supportare la vecchia sintassi di IE
         
-        if (Object.keys(this.connections).length > 0) {
-            Object.values(this.connections).forEach(value => {
-                this.peer.closeConnection(value);
+        if (Object.keys(this.game.users).length > 0) {
+            Object.values(this.game.users).forEach(user => {
+                this.peer.closeConnection(user.connection);
             });
         }
     }
+
+
 
 }
 
