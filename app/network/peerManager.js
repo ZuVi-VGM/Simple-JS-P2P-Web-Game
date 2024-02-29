@@ -13,7 +13,7 @@ class PeerManager
         });
 
         this.peer.on('connection', (conn) => {
-            console.log('Connessione ricevuta:', conn.peer);
+            console.log('Connection received from:', conn.peer);
             this.handleIncomingConnection(conn);
             this.emitter.emit('newConnection', conn);
         });
@@ -37,7 +37,7 @@ class PeerManager
         const conn = this.peer.connect(peerId);
 
         conn.on('open', () => {
-            console.log('Connessione avviata con:', peerId);
+            console.log('Connection started with:', peerId);
             this.handleIncomingConnection(conn);
             this.emitter.emit('newConnection', conn);
         });
@@ -45,13 +45,12 @@ class PeerManager
 
     handleIncomingConnection(conn) {
         conn.on('data', (data) => {
-            console.log('Dati ricevuti:', data);
             //Sendind data to MessageHandler module using an event
             this.emitter.emit('dataReceived', data);
         });
 
         conn.on('close', () => {
-            console.log('Connessione chiusa con:', conn.peer);
+            console.log('Connection closed with:', conn.peer);
             this.emitter.emit('connectionClosed', conn);
         });
   
