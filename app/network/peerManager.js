@@ -41,6 +41,8 @@ class PeerManager
             this.handleIncomingConnection(conn);
             this.emitter.emit('newConnection', conn);
         });
+
+        return conn.open;
     }
 
     handleIncomingConnection(conn) {
