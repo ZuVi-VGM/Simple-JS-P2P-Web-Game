@@ -169,6 +169,141 @@ class EncryptionService{
 
         console.error("Invalid AES key.");
     }
+
+    /* HMAC Functions */
+    async generateHmacKey(password) {
+        const encoder = new TextEncoder();
+        const passwordBuffer = encoder.encode(password);
+        const salt = window.crypto.getRandomValues(new Uint8Array(16)).join('');
+        const saltBuffer = encoder.encode(salt);
+    
+        try {
+            const keyMaterial = await window.crypto.subtle.importKey(
+                "raw",
+                passwordBuffer,
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            );
+    
+            const derivedKey = await window.crypto.subtle.deriveKey(
+                {
+                    "name": "PBKDF2",
+                    salt: saltBuffer,
+                    "iterations": 100000,
+                    "hash": "SHA-256"
+                },
+                keyMaterial,
+                { "name": "HMAC", "hash": "SHA-256", "length": 256 },
+                true,
+                ["sign"]
+            );
+    
+            const keyBuffer = await window.crypto.subtle.exportKey("raw", derivedKey);
+            const keyArray = Array.from(new Uint8Array(keyBuffer));
+            const keyHex = keyArray.map(byte => ('00' + byte.toString(16)).slice(-2)).join('');
+            
+            this.hmacObj = {'key': keyHex, 'salt': salt}
+            return this.hmacObj;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async generateHmacKeyFromPasswordAndSalt(password, salt) {
+        const encoder = new TextEncoder();
+        const passwordBuffer = encoder.encode(password);
+        const saltBuffer = encoder.encode(salt);
+    
+        try {
+            const keyMaterial = await window.crypto.subtle.importKey(
+                "raw",
+                passwordBuffer,
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            );
+    
+            const derivedKey = await window.crypto.subtle.deriveKey(
+                {
+                    "name": "PBKDF2",
+                    salt: saltBuffer,
+                    "iterations": 100000,
+                    "hash": "SHA-256"
+                },
+                keyMaterial,
+                { "name": "HMAC", "hash": "SHA-256", "length": 256 },
+                true,
+                ["sign"]
+            );
+    
+            const keyBuffer = await window.crypto.subtle.exportKey("raw", derivedKey);
+            const keyArray = Array.from(new Uint8Array(keyBuffer));
+            const keyHex = keyArray.map(byte => ('00' + byte.toString(16)).slice(-2)).join('');
+    
+            return keyHex;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async signMessage(message, hmacKey) {
+        try {
+            const encoder = new TextEncoder();
+            const messageBuffer = encoder.encode(message);
+            const keyBuffer = encoder.encode(hmacKey);
+    
+            const cryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyBuffer,
+                { name: "HMAC", hash: { name: "SHA-256" } },
+                false,
+                ["sign"]
+            );
+    
+            const signature = await window.crypto.subtle.sign(
+                "HMAC",
+                cryptoKey,
+                messageBuffer
+            );
+    
+            // Converti la firma in una stringa esadecimale
+            const signatureArray = Array.from(new Uint8Array(signature));
+            const signatureHex = signatureArray.map(byte => ('00' + byte.toString(16)).slice(-2)).join('');
+            
+            return signatureHex;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async verifySignature(message, signature, key) {
+        try {
+            const encoder = new TextEncoder();
+            const messageBuffer = encoder.encode(message);
+            const signatureBuffer = new Uint8Array(signature.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            const keyBuffer = encoder.encode(key);
+    
+            const cryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyBuffer,
+                { name: "HMAC", hash: { name: "SHA-256" } },
+                false,
+                ["verify"]
+            );
+    
+            const isSignatureValid = await window.crypto.subtle.verify(
+                "HMAC",
+                cryptoKey,
+                signatureBuffer,
+                messageBuffer
+            );
+    
+            return isSignatureValid;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default EncryptionService;
