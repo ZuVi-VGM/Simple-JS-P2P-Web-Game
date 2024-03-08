@@ -1,6 +1,6 @@
 class AuthenticationService {
     constructor(){
-        this.api = 'http://lsysprojects.altervista.org/saltinmente/api/'
+        this.api = 'https://lsysprojects.altervista.org/saltinmente/api/'
     }
 
     async get(url) {
