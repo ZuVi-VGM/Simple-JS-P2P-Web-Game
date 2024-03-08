@@ -1,7 +1,7 @@
 class User {
     constructor(connection){
         this.connection = connection;
-        this.name = 'aaasfa';
+        this.name = 'Connecting...';
         this.points = 0;
     }
 
@@ -15,6 +15,10 @@ class User {
 
     givePoint() { 
         this.points += 1;
+    }
+
+    setPoints(points) {
+        this.points = points;
     }
 }
 

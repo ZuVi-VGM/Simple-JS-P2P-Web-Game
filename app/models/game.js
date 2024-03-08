@@ -1,4 +1,5 @@
 import User from "./user.js";
+import DataService from "../services/dataService.js";
 
 class Game {
     constructor() {
@@ -6,12 +7,20 @@ class Game {
         this.obs = [];
         this.started = false;
         this.isHost = false;
-        this.changed = 0;
+        this.message = null;
+        this.curr_word = null;
     }
 
     startGame(){
         this.started = true;
         this.notify();
+    }
+
+    createNewGame(){
+        let data = new DataService;
+
+        this.words = data.getDataSubset(10);
+        console.log(this.words);
     }
 
     addHost(peer_id, username)
@@ -27,7 +36,7 @@ class Game {
             return false;
         }
 
-        this.notify();
+        //this.notify();
         return true;
     }
 
@@ -50,6 +59,20 @@ class Game {
         return true;
     }
 
+    updateUsersList(data) {
+        if (Object.keys(data).length > 0) {
+            Object.keys(data).forEach((key) => {
+                if(!this.users[key])
+                    this.users[key] = new User(key);
+                
+                this.users[key].setName(data[key][0]);
+                this.users[key].setPoints(data[key][1]);
+            });
+
+            this.notify();
+        }
+    }
+
     deleteUser(id) {
         delete this.users[id];
         this.notify();
@@ -59,7 +82,9 @@ class Game {
         if(this.users[id]){
             this.users[id].givePoint();
             this.notify();
+            return true;
         } 
+        return false;
     }
 
     getUserStats(){
@@ -72,9 +97,17 @@ class Game {
         return data;
     }
 
-    updateStatus(){
-        this.changed = 1;
-        this.notify();
+    getUserData(){
+        let data = {};
+        if (Object.keys(this.users).length > 0) {
+            Object.values(this.users).forEach(user => {
+                if(user.connection.peer)
+                    data[user.connection.peer] = [user.name, user.points];
+                else
+                    data[user.connection] = [user.name, user.points];
+            });
+        }
+        return data;
     }
 
     addObserver(obs) {
@@ -87,6 +120,7 @@ class Game {
 
     notify(){
         console.log(this.obs);
+        console.log(this.users);
         this.obs.forEach(observer => observer.update())
     }
 }
