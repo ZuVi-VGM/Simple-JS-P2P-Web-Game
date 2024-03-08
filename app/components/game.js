@@ -1,21 +1,38 @@
 import { html } from 'htm/preact';
-import { useEffect, useState, useRef } from 'preact/hooks';
+import { useEffect, useState, useRef, useReducer } from 'preact/hooks';
 import { useLocation } from 'wouter-preact';
 
 const Game = ({ mediator }) => {
-    const [loading, setLoading] = useState(true);
-    const [password, setPassword] = useState('');
+
+    const reducer = (state, action) => {
+        switch (action) {
+          case true: return 'host'; //isHost
+          case false: return -1; //notHost
+          case 'validated': return 'validated'; //token Validated
+          case 'connected': return 'connected'; //game connected
+          case 'started': return 'started'; //game started
+          case 'loading': return 'loading'; //loading
+         
+          default: throw new Error('Unexpected action');
+        }
+    };
+
+    const [status, dispatch] = useReducer(reducer, (mediator.game.isHost) ? 'connected' : -1);
+    const [username, setUsername] = useState('');
     const [error, setError] = useState('');
-    const [authenticated, setAuthenticated] = useState(mediator.game.isHost);
+    const [url] = useState(window.location.href);
     const [showLoginForm, setShowLoginForm] = useState(true);
     const [gameStarted, setGameStarted] = useState(false);
-    const [messages, setMessages] = useState([
-        { text: 'Messaggio Ricevuto' },
-        { text: 'Messaggio Inviato', sender: true }
-    ]);
+    const [connData, setConnection] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [currWord, setCurrWord] = useState();
     
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
+
+    // Ottieni il parametro token dall'URL
+    const [location, navigate] = useLocation();
+    const token = location.split('/game/')[1];
 
     const [userList, setUsers] = useState(Object.values(mediator.game.users).map(user => user.name));
 
@@ -23,7 +40,15 @@ const Game = ({ mediator }) => {
         // Aggiorna lo stato locale quando il valore di users in mediator cambia
         const updateHandler = () => {
             setUsers(Object.values(mediator.game.users).map(user => user.name));
-            console.log(Object.values(mediator.game.users).map(user => user.name));
+            if(mediator.game.started)
+                dispatch('started');
+            if(mediator.game.message)
+                setMessages(prevMessages => [...prevMessages, mediator.game.message]);
+            if(mediator.game.curr_word)
+                setCurrWord(mediator.game.curr_word);
+
+            mediator.game.message = null;
+            console.warn(this.game.curr_word);
         };
 
         // Aggiungi il componente come osservatore di Foo
@@ -35,68 +60,83 @@ const Game = ({ mediator }) => {
         };
     }, [mediator.game]);
 
-    // Ottieni il parametro token dall'URL
-    const [location, navigate] = useLocation();
+    const validateToken = async (token) => {
+        //Check for valid token else -> show error invalid game
+        const tokenObj = await mediator.validateToken(token);
 
-    const token = location.split('/game/')[1];
-
-    const initConnection = async (token) => {
-        try {
-            // Chiamata asincrona per creare un nuovo gioco
-            //await mediator.peer.getId();
-            if(await mediator.initConnection(token))
-                console.log(mediator);
-            else
-                return html`Error`;
-        } catch (error) {
-            // Gestire eventuali errori qui
-            console.error("Si è verificato un errore durante la connessione:", error);
+        if(!(tokenObj)){
+            setError('Error validating Token');
+        } else {
+            setConnection(tokenObj);
+            dispatch('validated');
         }
+    }
+
+    const initConnection = async (connData, username) => {       
+        // Chiamata asincrona per creare un nuovo gioco
+        //await mediator.peer.getId();
+        if(await mediator.initConnection(connData, username))
+            setShowLoginForm(false);
+        else
+            setError('Error during connection.');
     };
+
+    const sendMessage = (message) => {
+        //Handle message errors
+        mediator.sendMessage(message);
+
+    }
 
     useEffect(() => {
         // Se il token è vuoto, reindirizza alla homepage
         if (!token) {
             navigate('/');
         } else {
-            // Altrimenti, esegui il resto del codice
-            // Qui faccio la prima parte di autenticazione se non sono host
+            // Qui verifico il token se non sono host
             if(!mediator.game.isHost){
-                //Authentication
-                //Get token info
-                //Init connection
-                //Init e2e
-                //Then authenticate
-                
-                initConnection(token);
-            } 
-            // Simulazione del caricamento completato
-            const timer = setTimeout(() => {
-                setLoading(false);
-            }, 2000); // Tempo di attesa, ad esempio 2 secondi
-
-            // Pulizia dell'effetto quando il componente viene smontato
-            return () => clearTimeout(timer);
+                //Verifica sul token
+                dispatch('loading');
+                validateToken(token);
+            } else {
+                dispatch('connected');
+            }
         }
     }, [token, navigate]);
 
+    //Login form effect (fade out)
     useEffect(() => {
         if (!showLoginForm) {
-            // Se l'utente non è autenticato, nascondi il form di login dopo un ritardo per permettere l'animazione
+            // Se l'utente è autenticato, nascondi il form di login dopo un ritardo per permettere l'animazione
             const timer = setTimeout(() => {
-                setAuthenticated(true);
+                dispatch('connected');
             }, 1000); // Tempo di attesa, ad esempio 0.5 secondi
     
             return () => clearTimeout(timer);
         }
     }, [showLoginForm]);
 
+
+    /* CHAT MESSAGES */
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
 
+    const handleMessageChange = (e) => {
+        setNewMessage(e.target.value);
+    };
+
+    const handleMessageSubmit = (e) => {
+        e.preventDefault();
+        if (newMessage.trim() !== '') {
+            sendMessage(newMessage);
+            //setMessages([...messages, { text: newMessage, sender: true }]);
+            setNewMessage('');
+        }
+    }; 
+
+    //Game started effect
     useEffect(() => {
         if(gameStarted){
             mediator.game.started = true;
@@ -104,68 +144,69 @@ const Game = ({ mediator }) => {
         }
     }, [gameStarted]);
 
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-    };
 
-    const handleMessageChange = (e) => {
-        setNewMessage(e.target.value);
+    /* Username authentication (TODO: Require also password) */
+    const handleUsernameChange = (e) => {
+        setUsername(e.target.value);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         //Simulazione di script che controlla la password
         /* CHIAMA SCRIPT */
-        if (password === 'password_corretta') {
-            setShowLoginForm(false);
+        if (username.trim().match(/^[a-zA-Z0-9]+$/)) {
+            //Chiamare funzione che effettua il login
+            dispatch('loading');
+            initConnection(connData, username);
         } else {
-            setError('Password errata! Riprova.');
-            setPassword('');
+            alert('L\' username deve contenere solo lettere e/o numeri.');
+            setUsername('');
         }
         //setGameStarted(true);
     };
 
-    const handleMessageSubmit = (e) => {
-        e.preventDefault();
-        if (newMessage.trim() !== '') {
-            setMessages([...messages, { text: newMessage, sender: true }]);
-            setNewMessage('');
-        }
-    };  
-
+    /* UserList */
     const renderUserList = () => {
         return userList.map(user => (
             html`<li>${user}</li>`
         ));
     };
 
-    if (loading) {
-        console.log(mediator);
-        return html`<p>Caricamento...</p>`;
-    }
+    const copyUrl = () => {
+        navigator.clipboard.writeText(url)
+          .then(() => {
+            alert('URL copiato nella clipboard');
+            
+          })
+          .catch(err => {
+            console.error('Errore durante la copia dell\'URL nella clipboard: ', err);
+          });
+    };
 
-    if (!authenticated && !mediator.game.isHost && !gameStarted) {
+    if (error) {
+        return html`${error}`;
+    }
+    
+    // Form di autenticazione (per ora solo username)
+    const showAuthentication = () => {
         return (
             html`<div class="login-form ${!showLoginForm ? 'hide' : ''}">
-                <h2>Inserisci la password:</h2>
+                <h2>Inserisci l'username:</h2>
                 <form onSubmit=${handleSubmit}>
                     <input
-                        type="password"
-                        value=${password}
-                        onChange=${handlePasswordChange}
+                        type="text"
+                        value=${username}
+                        onChange=${handleUsernameChange}
                         required
                     />
                     <button type="submit">Invia</button>
                 </form>
-                ${error &&  html`<p>${error}</p>`}
             </div>`
         );
-    } else {
-        setAuthenticated(true);
-    }
+    };
 
-    // Se l'utente è autenticato, mostriamo la sala d'attesa
-    if(authenticated && !gameStarted){
+    //Waiting room x game non iniziato
+    const showWaitingRoom = () => {
         return (
             html`
             <div>
@@ -174,21 +215,25 @@ const Game = ({ mediator }) => {
                     ${renderUserList()}   
                 </ul>
                 <p>Attendi che il game inizi...</p>
+                
+                <div>
+                <label for="url">Premi per copiare e invitare i tuoi amici:</label>
+                <input id="url" type="text" value=${url} onclick=${copyUrl} readonly />
+                </div>
                 ${mediator.game.isHost &&
-                    html`<button onClick=${() => setGameStarted(true)}>Inizia Gioco</button>`
+                    html`<button onClick=${() => mediator.startGame()}>Inizia Gioco</button>`
                 }
-                <button onClick=${() => setUsers({...userList, 'test': {'name': 'prova'}})}>adduser</button>
-                <button onClick=${() => console.log(mediator)}>adduser</button>
-                ${error && html`<p>${error}</p>`}
+
             </div>
             `
         );
-    }
+    };
 
     // Se il game è iniziato mostriamo la chatbox
-    return (html`
+    const showGame = () => {
+        return (html`
         <div class="chatbox-container">
-        <div class="title">Parola da indovin___</div>
+        <div class="title">${currWord['definizione']} ${currWord['parola'][0]}</div>
         <div class="messages">
             ${messages.map((message, index) => html`
                 <div class="message ${message.sender ? 'sender' : ''}" key=${index}>${message.text}</div>
@@ -201,7 +246,16 @@ const Game = ({ mediator }) => {
                 <button type="submit">Invia</button>
             </form>
         </div></div>`
-    );
+        );
+    };
+
+    switch(status)
+    {
+        case 'loading': return html`<p>Caricamento...</p>`;
+        case 'validated': return showAuthentication();
+        case 'connected': return showWaitingRoom();
+        case 'started': return showGame();
+    }    
 };
 
 export default Game;
