@@ -48,7 +48,7 @@ const Game = ({ mediator }) => {
                 setCurrWord(mediator.game.curr_word);
 
             mediator.game.message = null;
-            console.warn(this.game.curr_word);
+            console.warn(mediator.game.curr_word);
         };
 
         // Aggiungi il componente come osservatore di Foo
