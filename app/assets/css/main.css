@@ -60,9 +60,26 @@ body {
 
 .chatbox-container {
     animation: slideIn 2s ease forwards;
+    width: 100%;
+    text-align: center;
 }
 
 .messages{
-    height:10vh;
+    height:50vh;
     overflow-y:auto;
+    width: 100%;
+    height: 50vh;
+    border: 1px solid #fff;
+    margin: 1em 0;
+    padding: 1em 0;
+}
+
+.message{
+    text-align: left;
+    padding: 1em;
+    background-color: #1b1b1b;
+}
+
+.message.sender{
+    text-align: right;
 }
