@@ -33,16 +33,45 @@ class PeerManager
         });
     }
 
-    connectToPeer(peerId) {
-        const conn = this.peer.connect(peerId);
+    async connectToPeer(peerId) {
+        // const conn = this.peer.connect(peerId);
 
-        conn.on('open', () => {
-            console.log('Connection started with:', peerId);
-            this.handleIncomingConnection(conn);
-            this.emitter.emit('newConnection', conn);
+        // conn.on('open', () => {
+        //     console.log('Connection started with:', peerId);
+        //     this.handleIncomingConnection(conn);
+        //     this.emitter.emit('newConnection', conn);
+        // });
+
+        // return conn.open;
+        return new Promise((resolve, reject) => {
+            const conn = this.peer.connect(peerId);
+            // Variabile per controllare se l'evento 'open' è stato emesso
+            let isOpenEventEmitted = false;
+
+            // Avviamo un timer di 5 secondi per controllare conn.open se l'evento 'open' non è stato emesso
+            const timeout = setTimeout(() => {
+                if (!isOpenEventEmitted && !conn.open) {
+                    console.error('Connection not opened within 5 seconds.');
+                    reject(false);
+                }
+            }, 5000);
+
+    
+            conn.on('open', () => {
+                console.log('Connection started with:', peerId);
+                this.handleIncomingConnection(conn);
+                this.emitter.emit('newConnection', conn);
+                isOpenEventEmitted = true;
+                clearTimeout(timeout); // Cancella il timer se l'evento 'open' è stato emesso
+                resolve(true);
+            });
+    
+            conn.on('error', (err) => {
+                console.error('Error connecting to peer:', err);
+                clearTimeout(timeout); // Cancella il timer in caso di errore
+                reject(false);
+            });
         });
-
-        return conn.open;
     }
 
     handleIncomingConnection(conn) {
@@ -59,7 +88,9 @@ class PeerManager
     }
 
     closeConnection(conn){
-        conn.close();
+        if(conn && typeof conn === 'object')
+            if(conn.open)
+                conn.close();
     }
 }
 
