@@ -19,9 +19,12 @@ window.auth = new AuthenticationService();
 //const messageData = { text: 'Ciao, mondo!' };
 //messageHandler.sendMessage(peerConnection, messageData);
 (async () => {
-    render(html`<p>Loading...</p>`, document.querySelector('#app'));
-    await mediator.peer.getId();
-    render(html`<${App} mediator=${mediator} />`, document.querySelector('#app'));
+    render(html`<p>Loading... if this page won't load try reloading or accessing in desktop mode.</p>`, document.querySelector('#app'));
+
+    if(await mediator.peer.getId())
+        render(html`<${App} mediator=${mediator} />`, document.querySelector('#app'));
+    else
+        render(html`<p>Error, try accessing desktop mode.</p>`, document.querySelector('#app'));  
 })();
 
 

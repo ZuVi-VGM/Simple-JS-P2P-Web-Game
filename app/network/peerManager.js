@@ -21,15 +21,17 @@ class PeerManager
 
     async getId() {
         return new Promise((resolve, reject) => {
-            const checkId = () => {
+            const checkId = (i) => {
+                if(i == 99)
+                    reject(false);
                 if (this.peer_id) {
                     resolve(this.peer_id);
                 } else {
-                    setTimeout(checkId, 100);
+                    setTimeout(() => checkId(i+1), 100);
                 }
             };
     
-            checkId();
+            checkId(0);
         });
     }
 
