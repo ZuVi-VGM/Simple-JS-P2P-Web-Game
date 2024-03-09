@@ -8,7 +8,7 @@ class Game {
         this.started = false;
         this.isHost = false;
         this.message = null;
-        this.curr_word = null;
+        this.currWord = null;
         this.data = new DataService;
     }
 

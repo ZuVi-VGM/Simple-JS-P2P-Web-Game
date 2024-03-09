@@ -105,7 +105,7 @@ class Mediator {
 
         if(data['peer_id'] == this.peer.peer_id)
             this.game.message['sender'] = true;
-        if(data['text'].toLowerCase() == this.game.curr_word['parola'].toLowerCase())
+        if(data['text'].toLowerCase() == this.game.currWord['name'].toLowerCase())
             this.game.message['correct'] = true;
         
         this.notifyAll(data);
@@ -116,12 +116,12 @@ class Mediator {
     }
 
     checkForWin(data){
-        if(data['text'].toLowerCase() == this.game.curr_word['parola'].toLowerCase())
+        if(data['text'].toLowerCase() == this.game.currWord['name'].toLowerCase())
             this.victory(data['peer_id']);
     }
 
     givePoint(data){
-        this.game.curr_word = data['word'];
+        this.game.currWord = data['word'];
         this.game.givePoint(data['peer_id']);
     }
 
@@ -129,11 +129,19 @@ class Mediator {
         if(this.game.isHost){
             if(this.game.words.length == 0)
                 this.game.generateWords();
-            this.game.curr_word = this.game.words.pop();
-            this.notifyAll({'action':'start_game', 'word': this.game.curr_word}); //TODO: send also a timestamp to sincronize
+            this.game.currWord = this.game.words.pop();
+
+            // Small manipulation on the fly //REDUNDANT
+            const definition = this.game.currWord['definition'];
+            const name = this.game.currWord['name'][0];
+            const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            this.game.currWord['definition'] = definition.replace(new RegExp(escapedName, 'gi'), name);
+            this.game.currWord['name'] =  this.game.currWord['name'][0].toUpperCase() + this.game.currWord['name'].slice(1); //prima lettera maiuscola
+
+            this.notifyAll({'action':'start_game', 'word': this.game.currWord}); //TODO: send also a timestamp to sincronize
         }
         else
-            this.game.curr_word = data['word'];
+            this.game.currWord = data['word'];
 
         this.game.startGame();           
     }
@@ -141,9 +149,16 @@ class Mediator {
     victory(peer_id){
         if(this.game.isHost){
             if(this.game.words.length > 0){
-                this.game.curr_word = this.game.words.pop();
-                this.notifyAll({'action':'give_point', 'peer_id':peer_id, 'word': this.game.curr_word});
-                
+                this.game.currWord = this.game.words.pop();
+
+                // Small manipulation on the fly
+                const definition = this.game.currWord['definition'];
+                const name = this.game.currWord['name'][0];
+                const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                this.game.currWord['definition'] = definition.replace(new RegExp(escapedName, 'gi'), name);
+                this.game.currWord['name'] =  this.game.currWord['name'][0].toUpperCase() + this.game.currWord['name'].slice(1); //prima lettera maiuscola
+
+                this.notifyAll({'action':'give_point', 'peer_id':peer_id, 'word': this.game.currWord});
             } else {
                 this.notifyAll({'action':'game_end', 'peer_id': peer_id});
                 this.game.started = false; //Handle this case

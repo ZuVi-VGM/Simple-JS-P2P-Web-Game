@@ -40,7 +40,7 @@ const Game = ({ mediator }) => {
     useEffect(() => {
         if(currWord)
         {
-            const wordArray = currWord['parola'].split('');
+            const wordArray = currWord['name'].split('');
             let currentIndex = 0;
 
             // Inizializzazione della parola
@@ -77,18 +77,17 @@ const Game = ({ mediator }) => {
             setUsers(Object.values(mediator.game.users).map(user => `${user.name}: ${user.points}`));
             console.warn(mediator.game);
             if(mediator.game.started){   
-                console.log('starteeeeeeeeeeeeeeeeeeeeed');
                 if(status !== 'started') 
                     dispatch('started');
                 if(mediator.game.message)
                     setMessages(prevMessages => [...prevMessages, mediator.game.message]);
-                if(mediator.game.curr_word)
-                    setCurrWord(mediator.game.curr_word);
+                if(mediator.game.currWord)
+                    setCurrWord(mediator.game.currWord);
             } else
                 dispatch('connected'); //game ended
             
             mediator.game.message = null;
-            console.warn(mediator.game.curr_word);
+            console.warn(mediator.game.currWord);
         };
 
         // Aggiungi il componente come osservatore di Foo
@@ -274,7 +273,7 @@ const Game = ({ mediator }) => {
     const showGame = () => {
         return (html`
         <div class="chatbox-container">
-        <div class="title"><p>${currWord['definizione']} </p> <p class="word-to-catch">${word}</p></div>
+        <div class="title"><p>${currWord['definition']} </p> <p class="word-to-catch">${word}</p></div>
         <div class="messages">
             ${messages.map((message, index) => html`
                 <div class="message ${message.sender ? 'sender' : ''} ${message.correct ? 'correct' : ''}" key=${index}>${message.text}</div>
