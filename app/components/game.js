@@ -21,11 +21,12 @@ const Game = ({ mediator }) => {
     const [username, setUsername] = useState('');
     const [error, setError] = useState('');
     const [url] = useState(window.location.href);
-    const [showLoginForm, setShowLoginForm] = useState(true);
-    const [gameStarted, setGameStarted] = useState(false);
+    const [showLoginForm, setShowLoginForm] = useState(true); //TODO: Must review for animations
+    const [gameStarted, setGameStarted] = useState(false); //TODO: Must review for animations
     const [connData, setConnection] = useState(false);
     const [messages, setMessages] = useState([]);
     const [currWord, setCurrWord] = useState();
+    const [word, setWord] = useState();
     
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
@@ -34,19 +35,58 @@ const Game = ({ mediator }) => {
     const [location, navigate] = useLocation();
     const token = location.split('/game/')[1];
 
-    const [userList, setUsers] = useState(Object.values(mediator.game.users).map(user => user.name));
+    const [userList, setUsers] = useState(Object.values(mediator.game.users).map(user => `${user.name}: ${user.points}`));
+
+    useEffect(() => {
+        if(currWord)
+        {
+            const wordArray = currWord['parola'].split('');
+            let currentIndex = 0;
+
+            // Inizializzazione della parola
+            const initialUpdate = () => {
+                currentIndex++;
+                if (currentIndex <= wordArray.length) {
+                    const updatedParola = wordArray.map((letter, index) => {
+                        if (index < currentIndex) {
+                            return letter;
+                        } else {
+                            return '_';
+                        }
+                    }).join('');
+                    setWord(updatedParola);
+                } else {
+                    clearInterval(intervalId);
+                }
+            };
+
+            initialUpdate(); // Prima iterazione
+
+            // Aggiornamento ogni 3 secondi
+            const intervalId = setInterval(initialUpdate, 3000);
+
+            return () => {
+                clearInterval(intervalId);
+            };
+        }
+    }, [currWord]);
 
     useEffect(() => {
         // Aggiorna lo stato locale quando il valore di users in mediator cambia
         const updateHandler = () => {
-            setUsers(Object.values(mediator.game.users).map(user => user.name));
-            if(mediator.game.started)
-                dispatch('started');
-            if(mediator.game.message)
-                setMessages(prevMessages => [...prevMessages, mediator.game.message]);
-            if(mediator.game.curr_word)
-                setCurrWord(mediator.game.curr_word);
-
+            setUsers(Object.values(mediator.game.users).map(user => `${user.name}: ${user.points}`));
+            console.warn(mediator.game);
+            if(mediator.game.started){   
+                console.log('starteeeeeeeeeeeeeeeeeeeeed');
+                if(status !== 'started') 
+                    dispatch('started');
+                if(mediator.game.message)
+                    setMessages(prevMessages => [...prevMessages, mediator.game.message]);
+                if(mediator.game.curr_word)
+                    setCurrWord(mediator.game.curr_word);
+            } else
+                dispatch('connected'); //game ended
+            
             mediator.game.message = null;
             console.warn(mediator.game.curr_word);
         };
@@ -129,6 +169,7 @@ const Game = ({ mediator }) => {
 
     const handleMessageSubmit = (e) => {
         e.preventDefault();
+        console.warn(status);
         if (newMessage.trim() !== '') {
             sendMessage(newMessage);
             //setMessages([...messages, { text: newMessage, sender: true }]);
@@ -233,10 +274,10 @@ const Game = ({ mediator }) => {
     const showGame = () => {
         return (html`
         <div class="chatbox-container">
-        <div class="title">${currWord['definizione']} ${currWord['parola'][0]}</div>
+        <div class="title"><p>${currWord['definizione']} </p> <p class="word-to-catch">${word}</p></div>
         <div class="messages">
             ${messages.map((message, index) => html`
-                <div class="message ${message.sender ? 'sender' : ''}" key=${index}>${message.text}</div>
+                <div class="message ${message.sender ? 'sender' : ''} ${message.correct ? 'correct' : ''}" key=${index}>${message.text}</div>
             `)}
             <div ref=${messagesEndRef}></div>
         </div>
@@ -253,7 +294,7 @@ const Game = ({ mediator }) => {
     {
         case 'loading': return html`<p>Caricamento...</p>`;
         case 'validated': return showAuthentication();
-        case 'connected': return showWaitingRoom();
+        case 'connected': return showWaitingRoom(); 
         case 'started': return showGame();
     }    
 };

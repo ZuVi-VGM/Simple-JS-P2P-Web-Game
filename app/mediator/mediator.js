@@ -98,10 +98,15 @@ class Mediator {
     }
 
     addMessage(data){
-        this.game.message = {'text': data['text'], 'sender': false};
+        if(!this.game.started)
+            return;
+
+        this.game.message = {'text': data['text'], 'sender': false, 'correct': false};
 
         if(data['peer_id'] == this.peer.peer_id)
             this.game.message['sender'] = true;
+        if(data['text'].toLowerCase() == this.game.curr_word['parola'].toLowerCase())
+            this.game.message['correct'] = true;
         
         this.notifyAll(data);
         this.game.notify(); 
@@ -122,6 +127,8 @@ class Mediator {
 
     startGame(data = null){
         if(this.game.isHost){
+            if(this.game.words.length == 0)
+                this.game.generateWords();
             this.game.curr_word = this.game.words.pop();
             this.notifyAll({'action':'start_game', 'word': this.game.curr_word}); //TODO: send also a timestamp to sincronize
         }
@@ -147,10 +154,10 @@ class Mediator {
             this.game.givePoint('host');
     }
 
-    endGame(peer_id){
-        this.game.givePoint(peer_id);
+    endGame(data){
+        this.game.givePoint(data['peer_id']);
         this.game.started = false;
-        notify();
+        this.game.notify();
     }
 
 

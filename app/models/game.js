@@ -9,6 +9,7 @@ class Game {
         this.isHost = false;
         this.message = null;
         this.curr_word = null;
+        this.data = new DataService;
     }
 
     startGame(){
@@ -16,11 +17,13 @@ class Game {
         this.notify();
     }
 
-    createNewGame(){
-        let data = new DataService;
-
-        this.words = data.getDataSubset(10);
+    createNewGame(num = 10){
+        this.generateWords(num);
         console.log(this.words);
+    }
+
+    generateWords(num = 10){
+        this.words = this.data.getDataSubset(num);
     }
 
     addHost(peer_id, username)
