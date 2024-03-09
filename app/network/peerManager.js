@@ -53,10 +53,10 @@ class PeerManager
             // Avviamo un timer di 5 secondi per controllare conn.open se l'evento 'open' non è stato emesso
             const timeout = setTimeout(() => {
                 if (!isOpenEventEmitted && !conn.open) {
-                    console.error('Connection not opened within 5 seconds.');
+                    console.error('Connection not opened within 20 seconds.');
                     reject(false);
                 }
-            }, 5000);
+            }, 20000);
 
     
             conn.on('open', () => {
