@@ -83,3 +83,11 @@ body {
 .message.sender{
     text-align: right;
 }
+
+.message.correct{
+    background-color:#2f9c66;
+}
+
+.word-to-catch{
+    letter-spacing: 1em;
+}
