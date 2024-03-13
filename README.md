@@ -2,7 +2,7 @@
 
 Un piccolo web game realizzato principalmente in javascript che sfrutta la libreria Peer.js per implementare una connessione P2P utilizzando WebRTC.
 
-![Stato del Progetto](https://img.shields.io/badge/Stato-In%20Sviluppo-yellow)
+![Stato del Progetto](https://img.shields.io/badge/Status-In%20Beta-blue)
 
 ## Indice
 
@@ -16,7 +16,7 @@ Alcune info utili sull'implementazione... (sicurezza)
 
 ## URL della Pagina Web
 
-[Presto disponibile](https://example.com)
+[(JumpIn!)](https://simple-js-p2-p-web-game.vercel.app/)
 
 ## Contatti
 
