@@ -16,7 +16,7 @@ Alcune info utili sull'implementazione... (sicurezza)
 
 ## URL della Pagina Web
 
-[(JumpIn!)](https://simple-js-p2-p-web-game.vercel.app/)
+[JumpIn!](https://simple-js-p2-p-web-game.vercel.app/)
 
 ## Contatti
 
